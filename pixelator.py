@@ -4,7 +4,7 @@ import PIL.JpegImagePlugin
 import numpy as np
 import sys
 
-if len(sys.argv) < 3 or len(sys.argv) > 4:
+if len(sys.argv) < 3 or len(sys.argv) > 3 or any(c.isalpha() for c in sys.argv[2]):
     print("Usage: python3 pixelator.py [path_to_image] [pixel_size]")
     print("(e.g. python3 pixelator.py ./4k.jpg 10)")
     sys.exit()
@@ -64,5 +64,5 @@ def reshape_matrix(m):
     return np.array(m, dtype=np.uint8)
             
 img = PIL.Image.open(image_name)
-summary = get_img_pixelized(img, 100)
+summary = get_img_pixelized(img, int(pix))
 summary.show()

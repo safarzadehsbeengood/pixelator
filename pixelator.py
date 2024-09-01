@@ -2,14 +2,15 @@ import PIL
 import PIL.Image
 import PIL.JpegImagePlugin
 import numpy as np
-import scipy.misc as smp
 import sys
 
-if len(sys.argv) < 2 or len(sys.argv) > 3:
-    print("Usage: ./pixelator.py [path_to_image]")
-    return -1
+if len(sys.argv) < 3 or len(sys.argv) > 4:
+    print("Usage: python3 pixelator.py [path_to_image] [pixel_size]")
+    print("(e.g. python3 pixelator.py ./4k.jpg 10)")
+    sys.exit()
 
 image_name = sys.argv[1] 
+pix = sys.argv[2]
 
 def matricize_pixel_data(pixel_data, img_size):
     matrix = [[] for _ in range(img_size[1])]

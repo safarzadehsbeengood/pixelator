@@ -37,6 +37,7 @@ def upload(request):
     total = len(sizes)
 
     def generate():
+        yield "\n"  # flushes response headers before processing begins
         for i, size in enumerate(sizes):
             logger.info("Size %d processing...", size)
             pixelate(img, size).save(session_dir / f"{size}.jpg", "JPEG", quality=85)
@@ -44,7 +45,10 @@ def upload(request):
             yield json.dumps({"progress": (i + 1) / total}) + "\n"
         yield json.dumps({"done": True, "session_id": session_id, "sizes": PIXEL_SIZES}) + "\n"
 
-    return StreamingHttpResponse(generate(), content_type="application/x-ndjson")
+    response = StreamingHttpResponse(generate(), content_type="application/x-ndjson")
+    response["X-Accel-Buffering"] = "no"
+    response["Cache-Control"] = "no-cache"
+    return response
 
 
 def delete_session(request, session_id):

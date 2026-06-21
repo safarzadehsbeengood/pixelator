@@ -3,3 +3,10 @@ include/
 lib/
 pyvenv.cfg
 lib64/
+.venv/
+media/
+__pycache__/
+*.pyc
+*.pyo
+uv.lock
+.vscode/

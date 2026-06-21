@@ -1,0 +1,20 @@
+[project]
+name = "pixelator"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1",
+    "pillow>=10.4.0",
+    "numpy>=2.1.0",
+    "click>=8.1",
+]
+
+[project.scripts]
+pixelate = "pixelator:cli"
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

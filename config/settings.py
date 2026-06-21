@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["pixelator.safarzadehsbeengood.com"]
 
+CSRF_TRUSTED_ORIGINS = ["pixelator.safarzadehsbeengood.com"]
+
 
 # Application definition
 

@@ -1,0 +1,10 @@
+.venv/
+media/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+db.sqlite3
+imgs/
+4k.jpg
+4k_25_pix_factor.PNG

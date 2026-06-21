@@ -65,24 +65,35 @@
 
     #file-input { display: none; }
 
-    #spinner {
+    #progress-section {
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       padding: 1.5rem 0;
+      width: 100%;
     }
 
-    .spinner-ring {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #333;
-      border-top-color: #888;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    #progress-track {
+      width: 100%;
+      height: 6px;
+      background: #2a2a2a;
+      border-radius: 3px;
+      overflow: hidden;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      border-radius: 3px;
+      transition: width 0.15s ease;
+    }
+
+    #progress-label {
+      font-size: 0.85rem;
+      color: #666;
+    }
 
     #error-msg {
       display: none;
@@ -172,7 +183,7 @@
       color: #666;
     }
 
-    #reset-btn {
+    #reset-btn, #download-btn {
       margin-top: 0.5rem;
       background: none;
       border: 1px solid #444;
@@ -201,9 +212,9 @@
     </div>
     <input type="file" id="file-input" accept="image/*">
 
-    <div id="spinner">
-      <div class="spinner-ring"></div>
-      <span style="color:#888">Processing image…</span>
+    <div id="progress-section">
+      <div id="progress-track"><div id="progress-fill"></div></div>
+      <span id="progress-label">Processing… 0%</span>
     </div>
 
     <div id="error-msg"></div>
@@ -235,17 +246,19 @@
   <script>
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    const dropZone    = document.getElementById('drop-zone');
-    const fileInput   = document.getElementById('file-input');
-    const spinner     = document.getElementById('spinner');
-    const errorMsg    = document.getElementById('error-msg');
-    const uploadSec   = document.getElementById('upload-section');
-    const resultSec   = document.getElementById('result-section');
-    const resultImg   = document.getElementById('result-img');
-    const slider      = document.getElementById('slider');
-    const sizeLabel   = document.getElementById('size-label');
-    const resetBtn     = document.getElementById('reset-btn');
-    const downloadBtn  = document.getElementById('download-btn');
+    const dropZone      = document.getElementById('drop-zone');
+    const fileInput     = document.getElementById('file-input');
+    const progressSec   = document.getElementById('progress-section');
+    const progressFill  = document.getElementById('progress-fill');
+    const progressLabel = document.getElementById('progress-label');
+    const errorMsg      = document.getElementById('error-msg');
+    const uploadSec     = document.getElementById('upload-section');
+    const resultSec     = document.getElementById('result-section');
+    const resultImg     = document.getElementById('result-img');
+    const slider        = document.getElementById('slider');
+    const sizeLabel     = document.getElementById('size-label');
+    const resetBtn      = document.getElementById('reset-btn');
+    const downloadBtn   = document.getElementById('download-btn');
 
     let sessionId = null;
 
@@ -282,6 +295,7 @@
       resultSec.style.display = 'none';
       uploadSec.style.display = '';
       dropZone.style.display = '';
+      progressSec.style.display = 'none';
       errorMsg.style.display = 'none';
       fileInput.value = '';
     });
@@ -291,7 +305,9 @@
     async function handleFile(file) {
       errorMsg.style.display = 'none';
       dropZone.style.display = 'none';
-      spinner.style.display = 'flex';
+      progressFill.style.width = '0%';
+      progressLabel.textContent = 'Processing… 0%';
+      progressSec.style.display = 'flex';
 
       const formData = new FormData();
       formData.append('image', file);
@@ -299,29 +315,49 @@
 
       try {
         const resp = await fetch('/upload/', { method: 'POST', body: formData });
-        const data = await resp.json();
 
         if (!resp.ok) {
+          const data = await resp.json();
           showError(data.error || 'Upload failed');
           return;
         }
 
-        sessionId = data.session_id;
-        spinner.style.display = 'none';
-        uploadSec.style.display = 'none';
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-        slider.value = 48;
-        updateImage(48);
-        resultSec.style.display = 'flex';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
 
-        preloadImages(data.sizes);
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const msg = JSON.parse(line);
+            if (msg.done) {
+              sessionId = msg.session_id;
+              progressSec.style.display = 'none';
+              uploadSec.style.display = 'none';
+              slider.value = 48;
+              updateImage(48);
+              resultSec.style.display = 'flex';
+              preloadImages(msg.sizes);
+            } else {
+              const pct = Math.round(msg.progress * 100);
+              progressFill.style.width = pct + '%';
+              progressLabel.textContent = `Processing… ${pct}%`;
+            }
+          }
+        }
       } catch (err) {
         showError('Network error — please try again');
       }
     }
 
     function showError(msg) {
-      spinner.style.display = 'none';
+      progressSec.style.display = 'none';
       dropZone.style.display = '';
       errorMsg.textContent = msg;
       errorMsg.style.display = 'block';

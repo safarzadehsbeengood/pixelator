@@ -10,7 +10,7 @@ import logging
 
 from .pixelate import pixelate
 
-PIXEL_SIZES = list(range(24, 129, 4))
+PIXEL_SIZES = list(range(4, 129, 4))
 
 logger = logging.getLogger(__name__)
 

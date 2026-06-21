@@ -1,4 +1,5 @@
 import json
+import shutil
 import uuid
 
 from django.conf import settings
@@ -44,3 +45,21 @@ def upload(request):
         yield json.dumps({"done": True, "session_id": session_id, "sizes": PIXEL_SIZES}) + "\n"
 
     return StreamingHttpResponse(generate(), content_type="application/x-ndjson")
+
+
+def delete_session(request, session_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    # Sanitise: session_id must be a valid UUID to prevent path traversal
+    try:
+        uuid.UUID(session_id)
+    except ValueError:
+        return JsonResponse({"error": "Invalid session"}, status=400)
+
+    session_dir = settings.MEDIA_ROOT / session_id
+    if session_dir.exists():
+        shutil.rmtree(session_dir)
+        logger.info("Deleted session %s", session_id)
+
+    return JsonResponse({"ok": True})

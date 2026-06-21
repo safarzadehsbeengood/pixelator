@@ -1,374 +1,540 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pixelator</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PIXELATOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #080808;
+        --surface: #0f0f0f;
+        --border: #1c1c1c;
+        --accent: #b0ff3c;
+        --text: #d8d8d8;
+        --muted: #3a3a3a;
+        --muted-text: #555;
+        --danger: #ff4455;
+        --font-pixel: "Press Start 2P", monospace;
+        --font-mono: ui-monospace, "Courier New", monospace;
+      }
 
-    body {
-      font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: #e0e0e0;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1.25rem 1rem 1rem;
-    }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-      color: #fff;
-      flex-shrink: 0;
-    }
+      body {
+        font-family: var(--font-mono);
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
 
-    #upload-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      width: 100%;
-      max-width: 640px;
-    }
+      /* ── Header ─────────────────────────────────────── */
 
-    #drop-zone {
-      border: 2px dashed #444;
-      border-radius: 12px;
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      user-select: none;
-    }
+      header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        height: 52px;
+        border-bottom: 1px solid var(--accent);
+      }
 
-    #drop-zone:hover, #drop-zone.dragover {
-      border-color: #888;
-      background: #1a1a1a;
-    }
+      #brand {
+        font-family: var(--font-pixel);
+        font-size: 0.8rem;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+      }
 
-    #drop-zone p {
-      color: #888;
-      font-size: 0.95rem;
-      margin-top: 0.5rem;
-    }
+      #tagline {
+        font-size: 0.7rem;
+        color: var(--muted-text);
+        letter-spacing: 0.1em;
+      }
 
-    #drop-zone .icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-    }
+      /* ── Main ───────────────────────────────────────── */
 
-    #file-input { display: none; }
+      main {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 2rem;
+      }
 
-    #progress-section {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1.5rem 0;
-      width: 100%;
-    }
+      /* ── Upload ─────────────────────────────────────── */
 
-    #progress-track {
-      width: 100%;
-      height: 6px;
-      background: #2a2a2a;
-      border-radius: 3px;
-      overflow: hidden;
-    }
+      #upload-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+        max-width: 560px;
+        gap: 1rem;
+      }
 
-    #progress-fill {
-      height: 100%;
-      width: 0%;
-      background: #fff;
-      border-radius: 3px;
-      transition: width 0.15s ease;
-    }
+      #drop-zone {
+        border: 2px dashed var(--muted);
+        padding: 4rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        transition:
+          border-color 0.15s,
+          background 0.15s,
+          box-shadow 0.15s;
+      }
 
-    #progress-label {
-      font-size: 0.85rem;
-      color: #666;
-    }
+      #drop-zone:hover,
+      #drop-zone.dragover {
+        border-color: var(--accent);
+        background: rgba(176, 255, 60, 0.03);
+        box-shadow: 0 0 40px rgba(176, 255, 60, 0.07);
+      }
 
-    #error-msg {
-      display: none;
-      color: #f87171;
-      background: #2a1010;
-      border: 1px solid #7f2a2a;
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
+      #drop-zone-prompt {
+        font-family: var(--font-pixel);
+        font-size: 0.6rem;
+        color: var(--text);
+        line-height: 2;
+        margin-bottom: 1rem;
+      }
 
-    #result-section {
-      display: none;
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
+      #drop-zone-sub {
+        font-size: 0.7rem;
+        color: var(--muted-text);
+        letter-spacing: 0.08em;
+      }
 
-    #result-img {
-      flex: 1;
-      min-height: 0;
-      max-width: 100%;
-      width: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      display: block;
-      image-rendering: pixelated;
-    }
+      #file-input {
+        display: none;
+      }
 
-    #controls {
-      flex-shrink: 0;
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
+      /* ── Progress ───────────────────────────────────── */
 
-    #size-label {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #fff;
-      font-variant-numeric: tabular-nums;
-    }
+      #progress-section {
+        display: none;
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 100%;
+      }
 
-    #slider {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: #333;
-      border-radius: 3px;
-      outline: none;
-      cursor: pointer;
-    }
+      #progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
 
-    #slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 0 0 3px #444;
-    }
+      #progress-status {
+        font-family: var(--font-pixel);
+        font-size: 0.45rem;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+      }
 
-    #slider::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 0 0 3px #444;
-    }
+      #progress-pct {
+        font-size: 0.7rem;
+        color: var(--muted-text);
+      }
 
-    .slider-labels {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: #666;
-    }
+      #progress-track {
+        width: 100%;
+        height: 6px;
+        background: var(--border);
+      }
 
-    #reset-btn, #download-btn {
-      margin-top: 0.5rem;
-      background: none;
-      border: 1px solid #444;
-      color: #aaa;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: border-color 0.2s, color 0.2s;
-    }
+      #progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        transition: width 0.12s linear;
+      }
 
-    #reset-btn:hover {
-      border-color: #888;
-      color: #fff;
-    }
-  </style>
-</head>
-<body>
-  <h1>Pixelator</h1>
+      /* ── Error ──────────────────────────────────────── */
 
-  <div id="upload-section">
-    <div id="drop-zone">
-      <div class="icon">🖼️</div>
-      <strong>Drop an image here</strong>
-      <p>or click to browse</p>
-    </div>
-    <input type="file" id="file-input" accept="image/*">
+      #error-msg {
+        display: none;
+        font-family: var(--font-pixel);
+        font-size: 0.42rem;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        padding: 1rem;
+        line-height: 2.2;
+        letter-spacing: 0.05em;
+      }
 
-    <div id="progress-section">
-      <div id="progress-track"><div id="progress-fill"></div></div>
-      <span id="progress-label">Processing… 0%</span>
-    </div>
+      /* ── Result ─────────────────────────────────────── */
 
-    <div id="error-msg"></div>
-  </div>
+      #result-section {
+        display: none;
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
 
-  <div id="result-section">
-    <img id="result-img" alt="Pixelated image">
+      #result-img {
+        flex: 1;
+        min-height: 0;
+        max-width: 100%;
+        width: 100%;
+        object-fit: contain;
+        display: block;
+        image-rendering: pixelated;
+      }
 
-    <div id="controls">
-      <span id="size-label">16px blocks</span>
-      <input type="range" id="slider" min="24" max="128" step="4" value="48">
-      <div class="slider-labels"><span>24</span><span>128</span></div>
-      <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
-        <a id="download-btn" href="#" download="pixel-art.jpg"
-           style="background:none;border:1px solid #444;color:#aaa;padding:0.5rem 1.25rem;
-                  border-radius:6px;cursor:pointer;font-size:0.875rem;text-decoration:none;
-                  transition:border-color 0.2s,color 0.2s;"
-           onmouseover="this.style.borderColor='#888';this.style.color='#fff'"
-           onmouseout="this.style.borderColor='#444';this.style.color='#aaa'">
-          Download
-        </a>
-        <button id="reset-btn">Upload new image</button>
+      /* ── Controls ───────────────────────────────────── */
+
+      #controls {
+        flex-shrink: 0;
+        width: 100%;
+        max-width: 560px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      #controls-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+
+      #size-label {
+        font-family: var(--font-pixel);
+        font-size: 0.5rem;
+        color: var(--accent);
+        letter-spacing: 0.06em;
+      }
+
+      #controls-hint {
+        font-size: 0.65rem;
+        color: var(--muted-text);
+        letter-spacing: 0.08em;
+      }
+
+      #slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 4px;
+        background: var(--border);
+        outline: none;
+        cursor: pointer;
+      }
+
+      #slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 0;
+        background: var(--accent);
+        cursor: pointer;
+      }
+
+      #slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 0;
+        background: var(--accent);
+        cursor: pointer;
+        border: none;
+      }
+
+      .slider-bounds {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.62rem;
+        color: var(--muted-text);
+      }
+
+      /* ── Buttons ────────────────────────────────────── */
+
+      .btn-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.35rem;
+      }
+
+      .btn {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        background: none;
+        border: 1px solid var(--muted);
+        color: var(--muted-text);
+        padding: 0.5rem 1.1rem;
+        cursor: pointer;
+        text-decoration: none;
+        letter-spacing: 0.06em;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+
+      .btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* ── Footer ─────────────────────────────────────── */
+
+      footer {
+        flex-shrink: 0;
+        height: 38px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #footer-text {
+        font-size: 0.62rem;
+        color: var(--muted-text);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      #footer-text:hover {
+        color: var(--text);
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span id="brand"></span>
+      <span id="tagline"></span>
+    </header>
+
+    <main>
+      <div id="upload-section">
+        <div id="drop-zone">
+          <div id="drop-zone-prompt"></div>
+          <div id="drop-zone-sub"></div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" />
+
+        <div id="progress-section">
+          <div id="progress-header">
+            <span id="progress-status">PROCESSING</span>
+            <span id="progress-pct">0%</span>
+          </div>
+          <div id="progress-track"><div id="progress-fill"></div></div>
+        </div>
+
+        <div id="error-msg"></div>
       </div>
-    </div>
-  </div>
 
-  {% csrf_token %}
+      <div id="result-section">
+        <img id="result-img" alt="Pixelated image" />
 
-  <script>
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        <div id="controls">
+          <div id="controls-header">
+            <span id="size-label"></span>
+            <span id="controls-hint">pixel size</span>
+          </div>
+          <input
+            type="range"
+            id="slider"
+            min="24"
+            max="128"
+            step="4"
+            value="48"
+          />
+          <div class="slider-bounds"><span>24</span><span>128</span></div>
+          <div class="btn-row">
+            <a id="download-btn" class="btn" href="#" download="pixel-art.jpg"
+              >[ download ]</a
+            >
+            <button id="reset-btn" class="btn">[ new image ]</button>
+          </div>
+        </div>
+      </div>
+    </main>
 
-    const dropZone      = document.getElementById('drop-zone');
-    const fileInput     = document.getElementById('file-input');
-    const progressSec   = document.getElementById('progress-section');
-    const progressFill  = document.getElementById('progress-fill');
-    const progressLabel = document.getElementById('progress-label');
-    const errorMsg      = document.getElementById('error-msg');
-    const uploadSec     = document.getElementById('upload-section');
-    const resultSec     = document.getElementById('result-section');
-    const resultImg     = document.getElementById('result-img');
-    const slider        = document.getElementById('slider');
-    const sizeLabel     = document.getElementById('size-label');
-    const resetBtn      = document.getElementById('reset-btn');
-    const downloadBtn   = document.getElementById('download-btn');
+    <footer>
+      <a style="text-decoration: none" href="https://www.safarzadehsbeengood.com">
+        <span id="footer-text"></span>
+      </a>
+    </footer>
 
-    let sessionId = null;
+    {% csrf_token %}
 
-    function updateImage(size) {
-      const url = `/media/${sessionId}/${size}.jpg`;
-      resultImg.src = url;
-      downloadBtn.href = url;
-      downloadBtn.download = `pixel-art-${size}px.jpg`;
-      sizeLabel.textContent = `${size}px blocks`;
-    }
+    <script>
+      // branding
+      const BRAND_NAME = "PIXELATOR";
+      const TAGLINE = "@safarzadehsbeengood";
+      const FOOTER_TEXT = "© 2026 safarzadehsbeengood";
+      const UPLOAD_PROMPT = "[ DROP IMAGE TO BEGIN ]";
+      const UPLOAD_SUB = "or click to select a file";
 
-    dropZone.addEventListener('click', () => fileInput.click());
+      document.getElementById("brand").textContent = BRAND_NAME;
+      document.getElementById("tagline").textContent = TAGLINE;
+      document.getElementById("footer-text").textContent = FOOTER_TEXT;
+      document.getElementById("drop-zone-prompt").textContent = UPLOAD_PROMPT;
+      document.getElementById("drop-zone-sub").textContent = UPLOAD_SUB;
+      document.title = BRAND_NAME;
 
-    dropZone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
+      const csrfToken = document.querySelector(
+        "[name=csrfmiddlewaretoken]",
+      ).value;
 
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("file-input");
+      const progressSec = document.getElementById("progress-section");
+      const progressFill = document.getElementById("progress-fill");
+      const progressPct = document.getElementById("progress-pct");
+      const errorMsg = document.getElementById("error-msg");
+      const uploadSec = document.getElementById("upload-section");
+      const resultSec = document.getElementById("result-section");
+      const resultImg = document.getElementById("result-img");
+      const slider = document.getElementById("slider");
+      const sizeLabel = document.getElementById("size-label");
+      const resetBtn = document.getElementById("reset-btn");
+      const downloadBtn = document.getElementById("download-btn");
 
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
-    });
+      let sessionId = null;
 
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files[0]) handleFile(fileInput.files[0]);
-    });
+      function updateImage(size) {
+        const url = `/media/${sessionId}/${size}.jpg`;
+        resultImg.src = url;
+        downloadBtn.href = url;
+        downloadBtn.download = `pixel-art-${size}px.jpg`;
+        sizeLabel.textContent = `${size}px`;
+      }
 
-    resetBtn.addEventListener('click', () => {
-      sessionId = null;
-      resultSec.style.display = 'none';
-      uploadSec.style.display = '';
-      dropZone.style.display = '';
-      progressSec.style.display = 'none';
-      errorMsg.style.display = 'none';
-      fileInput.value = '';
-    });
+      dropZone.addEventListener("click", () => fileInput.click());
 
-    slider.addEventListener('input', () => updateImage(slider.value));
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
 
-    async function handleFile(file) {
-      errorMsg.style.display = 'none';
-      dropZone.style.display = 'none';
-      progressFill.style.width = '0%';
-      progressLabel.textContent = 'Processing… 0%';
-      progressSec.style.display = 'flex';
+      dropZone.addEventListener("dragleave", () =>
+        dropZone.classList.remove("dragover"),
+      );
 
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('csrfmiddlewaretoken', csrfToken);
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+      });
 
-      try {
-        const resp = await fetch('/upload/', { method: 'POST', body: formData });
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+      });
 
-        if (!resp.ok) {
-          const data = await resp.json();
-          showError(data.error || 'Upload failed');
-          return;
-        }
+      function deleteSession(id) {
+        if (!id) return;
+        navigator.sendBeacon(
+          `/session/${id}/delete/`,
+          new URLSearchParams({ csrfmiddlewaretoken: csrfToken }),
+        );
+      }
 
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+      resetBtn.addEventListener("click", () => {
+        deleteSession(sessionId);
+        sessionId = null;
+        resultSec.style.display = "none";
+        uploadSec.style.display = "";
+        dropZone.style.display = "";
+        progressSec.style.display = "none";
+        errorMsg.style.display = "none";
+        fileInput.value = "";
+      });
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop();
+      window.addEventListener("pagehide", () => deleteSession(sessionId));
 
-          for (const line of lines) {
-            if (!line.trim()) continue;
-            const msg = JSON.parse(line);
-            if (msg.done) {
-              sessionId = msg.session_id;
-              progressSec.style.display = 'none';
-              uploadSec.style.display = 'none';
-              slider.value = 48;
-              updateImage(48);
-              resultSec.style.display = 'flex';
-              preloadImages(msg.sizes);
-            } else {
-              const pct = Math.round(msg.progress * 100);
-              progressFill.style.width = pct + '%';
-              progressLabel.textContent = `Processing… ${pct}%`;
+      slider.addEventListener("input", () => updateImage(slider.value));
+
+      async function handleFile(file) {
+        errorMsg.style.display = "none";
+        dropZone.style.display = "none";
+        progressFill.style.width = "0%";
+        progressPct.textContent = "0%";
+        progressSec.style.display = "flex";
+
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("csrfmiddlewaretoken", csrfToken);
+
+        try {
+          const resp = await fetch("/upload/", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!resp.ok) {
+            const data = await resp.json();
+            showError(data.error || "upload failed");
+            return;
+          }
+
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              const msg = JSON.parse(line);
+              if (msg.done) {
+                sessionId = msg.session_id;
+                progressSec.style.display = "none";
+                uploadSec.style.display = "none";
+                slider.value = 48;
+                updateImage(48);
+                resultSec.style.display = "flex";
+                preloadImages(msg.sizes);
+              } else {
+                const pct = Math.round(msg.progress * 100);
+                progressFill.style.width = pct + "%";
+                progressPct.textContent = pct + "%";
+              }
             }
           }
+        } catch (err) {
+          showError("network error — please try again");
         }
-      } catch (err) {
-        showError('Network error — please try again');
       }
-    }
 
-    function showError(msg) {
-      progressSec.style.display = 'none';
-      dropZone.style.display = '';
-      errorMsg.textContent = msg;
-      errorMsg.style.display = 'block';
-    }
+      function showError(msg) {
+        progressSec.style.display = "none";
+        dropZone.style.display = "";
+        errorMsg.textContent = "// ERROR: " + msg;
+        errorMsg.style.display = "block";
+      }
 
-    function preloadImages(sizes) {
-      sizes.forEach(size => {
-        const img = new Image();
-        img.src = `/media/${sessionId}/${size}.jpg`;
-      });
-    }
-  </script>
-</body>
+      function preloadImages(sizes) {
+        sizes.forEach((size) => {
+          new Image().src = `/media/${sessionId}/${size}.jpg`;
+        });
+      }
+    </script>
+  </body>
 </html>
